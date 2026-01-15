@@ -17,8 +17,8 @@ export default async function SettingsPage() {
     })
 
     if (!dbUser) {
-        // Should not happen if logged in correctly, but handle grace
-        return <div>User not found</div>
+        // If Prisma user is missing, force onboarding to create it
+        redirect("/onboarding")
     }
 
     const initialData = {
