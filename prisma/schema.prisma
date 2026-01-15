@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  surname   String?
+  dateOfBirth DateTime?
+  createdAt DateTime @default(now())
+  
+  preferences UserPreference?
+  savedRecipes SavedRecipe[]
+}
+
+model UserPreference {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id])
+  
+  likedIngredients   String[]
+  excludedIngredients String[]
+  dietaryRestrictions String[] // e.g., "vegan", "gluten-free"
+  
+  targetCaloriesMin  Int?
+  targetCaloriesMax  Int?
+  targetProteinMin   Int?
+  targetCarbsMin     Int?
+  targetFatMin       Int?
+}
+
+model SavedRecipe {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  recipeId    String   // Edamam URI/ID
+  title       String
+  image       String
+  sourceUrl   String   @default("")
+  ingredientLines String[] // JSON can effectively store string arrays too, but string[] is cleaner in Postgres
+  nutrition   Json?    // Store basic macros to display in list without API call
+  
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, recipeId]) // Prevent duplicate saves
+}
