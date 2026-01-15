@@ -4,8 +4,6 @@
 
 Built with **Next.js 15** and powered by the **Edamam API**, it offers a personalized cooking experience based on your dietary preferences and health goals.
 
-![Dashboard Preview](public/file.svg) *(Replace with actual screenshot link later)*
-
 ## 🚀 Features
 
 -   **🥗 Smart Recipe Search**: Find recipes based on ingredients, calories, and specific macro-nutrient targets (Protein, Carbs, Fat).
