@@ -17,8 +17,10 @@ export async function getRecipesAction(params: SearchParams) {
         if (user && user.email) {
             // We use email to look up the User first because Prisma User ID might be different if we didn't sync perfectly,
             // but we did sync using user.id in Onboarding. Let's try finding by ID first.
+            // We use email to look up the User first because Prisma User ID might be different if we didn't sync perfectly,
+            // but we did sync using user.id in Onboarding. Let's try finding by ID first.
             const dbUser = await prisma.user.findUnique({
-                where: { id: user.id },
+                where: { email: user.email },
                 include: { preferences: true }
             });
             preferences = dbUser?.preferences;
@@ -73,9 +75,11 @@ export async function getRecipesAction(params: SearchParams) {
         }
 
         // (after preference logic, before search)
-        // console.log("Calling searchRecipesEdamam with:", searchParams);
+        console.log("Searching with:", JSON.stringify(searchParams, null, 2));
 
         const results = await searchRecipesEdamam(searchParams, userId);
+        console.log(`Found ${results.length} recipes`);
+
         // Transform for UI if necessary, or pass through
         return results.map(recipe => {
             const nutrients = recipe.nutrition.nutrients;
