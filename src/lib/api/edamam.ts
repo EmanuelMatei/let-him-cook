@@ -67,11 +67,16 @@ export async function searchRecipesEdamam(params: SearchParams, userId: string =
             "Edamam-Account-User": sanitizedUserId
         };
 
+        // Log the full URL (masking sensitive keys for security)
+        const debugUrl = url.toString().replace(APP_ID, "***").replace(APP_KEY, "***");
+        console.log("Fetching Edamam URL:", debugUrl);
+
         const response = await fetch(url.toString(), { headers });
         if (!response.ok) {
-            // Revert to simple error, or keep body if useful for future debugging but maybe less verbose
-            // Keeping it simple for production cleanliness unless debugging
-            // const errorBody = await response.text();
+            if (response.status === 429) {
+                console.error("Edamam Rate Limit Exceeded");
+                throw new Error("Rate limit exceeded. Please wait a minute before searching again.");
+            }
             throw new Error(`Edamam API Error: ${response.status} ${response.statusText}`);
         }
         const data = await response.json();
