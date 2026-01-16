@@ -12,7 +12,7 @@ export default async function SettingsPage() {
     }
 
     const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
+        where: { email: user.email },
         include: { preferences: true }
     })
 

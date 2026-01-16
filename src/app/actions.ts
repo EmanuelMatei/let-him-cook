@@ -106,8 +106,9 @@ export async function getFavoriteRecipes() {
     if (!user) return []
 
     // We try to find user by Auth ID
+    // We try to find user by Email to get the correct internal Prisma ID
     const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
+        where: { email: user.email! },
         include: { savedRecipes: true }
     });
 
@@ -123,8 +124,10 @@ export async function toggleFavoriteAction(recipe: any) {
 
     // Ensure User exists in Prisma before linking foreign key
     // This handles cases where user signed up but didn't finish onboarding or sync failed
-    await prisma.user.upsert({
-        where: { id: user.id },
+    // Ensure User exists in Prisma before linking foreign key
+    // We upsert by EMAIL to handle ID mismatches (legacy vs new Supabase ID)
+    const dbUser = await prisma.user.upsert({
+        where: { email: user.email! },
         update: {},
         create: {
             id: user.id,
@@ -137,7 +140,7 @@ export async function toggleFavoriteAction(recipe: any) {
     const existing = await prisma.savedRecipe.findUnique({
         where: {
             userId_recipeId: {
-                userId: user.id,
+                userId: dbUser.id,
                 recipeId: recipe.id
             }
         }
@@ -155,7 +158,7 @@ export async function toggleFavoriteAction(recipe: any) {
         try {
             await prisma.savedRecipe.create({
                 data: {
-                    userId: user.id,
+                    userId: dbUser.id,
                     recipeId: recipe.id,
                     title: recipe.title,
                     image: recipe.image,
@@ -173,7 +176,7 @@ export async function toggleFavoriteAction(recipe: any) {
             console.error("Failed to save full recipe data (likely stale Prisma Client), falling back to basic data", e)
             await prisma.savedRecipe.create({
                 data: {
-                    userId: user.id,
+                    userId: dbUser.id,
                     recipeId: recipe.id,
                     title: recipe.title,
                     image: recipe.image,
